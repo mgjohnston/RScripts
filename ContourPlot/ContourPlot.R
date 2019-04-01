@@ -1,6 +1,6 @@
-##Functions for later
+##Declare functions
 
-#Midpoint of contour dor directlabels
+#Midpoint of contour for directlabels package
 
 not.extreme<- function(d,...)
 {
@@ -48,4 +48,5 @@ p<-ggplot(df, aes(x=x,y=y,z=z, fill=z))+
   scale_fill_gradientn(colours=myPal, guide="colorbar")+
   geom_dl(aes(label=..level..), method="not.extreme", stat="contour")
 p
+#Save plot
 ggsave("plot.png",p, width=6.75, height=6, device="png")
