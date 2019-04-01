@@ -25,7 +25,7 @@ getPackages <- function(x){
 }
 
 #Install and load package(s)
-packageList <- c("ggplot", "directlabels","RColorBrewer")
+packageList <- c("ggplot2", "directlabels","RColorBrewer")
 getPackages(packageList)
 
 ##Create similar data
@@ -43,10 +43,13 @@ for(i in area){
 df<-as.data.frame(df)
 
 ##Plot data
+myPal<-rev(brewer.pal(5,"Spectral"))
+
 p<-ggplot(df, aes(x=x,y=y,z=z, fill=z))+
   geom_raster(interpolate = TRUE)+geom_contour(color="black")+
   scale_fill_gradientn(colours=myPal, guide="colorbar")+
   geom_dl(aes(label=..level..), method="not.extreme", stat="contour")
 p
+
 #Save plot
 ggsave("plot.png",p, width=6.75, height=6, device="png")
