@@ -1,0 +1,7 @@
+This folder contains:
+ - ChunkPlot.R
+ - plot.png
+ 
+ChunkPlot.R was made on R 3.5.3 motiavted by a question on how to make multiple graphs from a processed RNASeq dataset.
+
+ChunkPlot takes a list of genes, and transforms the data into a plot-able format. The data then is plotted in groups (or chunks).
