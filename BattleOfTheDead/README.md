@@ -4,7 +4,14 @@ A coded solution to the Riddler Classic (17th May 2019).
 
 https://fivethirtyeight.com/features/how-many-soldiers-do-you-need-to-beat-the-night-king/
 
-##Riddler Classic
+
+## Solution
+
+Living = n^2, Dead = n
+
+See graph and code.
+
+## Riddler Classic
 
 From Greg Burnham, it had to happen eventually, at long last and not a moment too soon, The Riddler meets “Game of Thrones”:
 
@@ -14,8 +21,3 @@ Forget the Battle of Winterfell and model our battle as follows. Each army lines
 
 What starting sizes of the armies, living and dead, give each army a 50-50 chance of winning?
 
-## Solution
-
-Living = n^2, Dead = n
-
-See graph and code. 
