@@ -32,3 +32,12 @@ for (j in seq(1,450,10)){
 }
 result2<-as.data.frame(result2)
 ggplot(result2, aes(x=living,y=dead,fill=livewin>50))+geom_raster(interpolate=F)      
+
+result3<-NULL
+for (i in unique(result2$living)){
+  half<-spline(x = result2[result2$living==i,]$livewin, y = result2[result2$living==9,]$dead, xout=50)$y
+  result3<-rbind(result3, c(living=i,dead=half))
+}
+result3<-as.data.frame(result3)
+ggplot(result3, aes(x=sqrt(living), y=dead))+geom_line()
+       
