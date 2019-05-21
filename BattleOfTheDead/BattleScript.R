@@ -35,7 +35,7 @@ ggplot(result2, aes(x=living,y=dead,fill=livewin>50))+geom_raster(interpolate=F)
 
 result3<-NULL
 for (i in unique(result2$living)){
-  half<-spline(x = result2[result2$living==i,]$livewin, y = result2[result2$living==9,]$dead, xout=50)$y
+  half<-spline(x = result2[result2$living==i,]$livewin, y = result2[result2$living==i,]$dead, xout=50)$y
   result3<-rbind(result3, c(living=i,dead=half))
 }
 result3<-as.data.frame(result3)
