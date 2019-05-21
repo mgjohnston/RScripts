@@ -1,6 +1,6 @@
 # Battle of the Dead
 
-A coded solution to the Riddler Classic (17th May 2019).
+A coded solution to the Riddler Classic (17th May 2019), submitted 21st May 2019.
 
 https://fivethirtyeight.com/features/how-many-soldiers-do-you-need-to-beat-the-night-king/
 
