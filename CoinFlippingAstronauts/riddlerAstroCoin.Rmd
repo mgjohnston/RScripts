@@ -1,0 +1,334 @@
+---
+title: "One Small Step For Man, One Giant Coin Flip For Mankind"
+author: "Matthew Johnston"
+date: "30 May 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(1)
+library(tidyverse)
+library(reshape2)
+nCr <- function(n,r) factorial(n)/(factorial(r)*factorial(n-r))
+binom<-function(success,flips,prob) nCr(flips,success)*prob^success*(1-prob)^(flips-success)
+possibilities <- function(n) distinct(as.data.frame(t(combn(rep(c(F,T),n),n,NULL,T))))
+likelihood <- function(x, n,prob=0.5) prob^x*(1-prob)^(n-x)
+splitter <- function(values, N){
+  inds = c(0, sapply(1:N, function(i) which.min(abs(cumsum(as.numeric(values)) - sum(as.numeric(values))/N*i))))
+  dif = diff(inds)
+  re = rep(1:length(dif), times = dif)
+  return(split(values, re))
+}
+colMax<-function(X) apply(X, 2, max)
+prive = function(v, N){ #added dummy N argument because of the tester function
+  dummy = N
+  computeD <- function(p, q, S) {
+    n <- length(S)
+    S.star <- S[n] / 3
+    if (all(p < q)) {
+      (S[p] - S.star)^2 + (S[q] - S[p] - S.star)^2 + (S[n] - S[q] - S.star)^2
+    } else {
+      stop("You shouldn't be here!")
+    }
+  }
+  optiCut <- function(v, N) {
+    S <- cumsum(v)
+    n <- length(v)
+    S_star <- S[n] / 3
+    # good starting values
+    p_star <- which.min((S - S_star)^2)
+    q_star <- which.min((S - 2*S_star)^2)
+    print(min <- computeD(p_star, q_star, S))
+    
+    count <- 0
+    for (q in 2:(n-1)) {
+      S3 <- S[n] - S[q] - S_star
+      if (S3*S3 < min) {
+        count <- count + 1
+        D <- computeD(seq_len(q - 1), q, S)
+        ind = which.min(D);
+        if (D[ind] < min) {
+          # Update optimal values
+          p_star = ind;
+          q_star = q;
+          min = D[ind];
+        }
+      }
+    }
+    c(p_star, q_star, computeD(p_star, q_star, S), count)
+  }
+  z3 = optiCut(v)
+  inds = c(0, z3[1:2], length(v))
+  dif = diff(inds)
+  re = rep(1:length(dif), times = dif)
+  return(split(v, re))
+} #added output to be more in line with the other two
+
+
+```
+
+## Solution
+
+With 3 or 5 astronauts it is possible to equally split them with a fair or unfair coin!
+
+The minimum flips for 3 astronauts is 4, while for 5 it is 6. The more flips you do the greater your accuracy.
+
+## Riddler Classic
+
+From Dean Ballard, one small step for man, one giant problem for The Riddler:
+
+Sometime in the near future people from Earth will land on Mars. Someone will step out of the landing pod and become the first human to leave his or her footprints on another planet.
+
+Imagine two astronauts sitting in the pod, both of whom would love to take that first step. But they would also like to decide which of them gets the honor in a fair manner, so they flip a coin. Despite the change in gravity, this method is fair as long as the coin is fair. If there were four astronauts in the landing pod, then they could flip a fair coin twice, assigning the four possible outcomes - heads-heads, heads-tails, tails-heads and tails-tails - to each of the four astronauts. This would also be fair as long as the coins were fair.
+
+But what if there were three astronauts in the landing pod? Then our fair coin doesn't work so well. We could, for example, assign three of the four possible outcomes - say heads-heads, heads-tails and tails-heads - to each of the astronauts. Then, if the outcome were tails-tails, they could simply start over again with two more flips. This would give an ever-increasing probability that a fair decision would eventually be made, but that could take a long time, and the required number of flips would be unknown. And there's a planet to walk on!
+
+Another approach, however, is to use an "unfair coin" - one in which the probabilities of heads and tails are not equal. Is it possible to make a fair choice among three astronauts with a fixed number of flips of an unfair coin?
+
+You are able to set the coin's probability of heads to any number you like between 0 and 1. You may flip the coin as many times as you like, as long as that is some known, fixed number. And, you may assign any combination of possible outcomes to each of the three astronauts.
+
+Extra credit: What if there were five astronauts?
+
+## Three astronauts
+
+If we consider every permuation as different, i.e. [H,T] is different from [T,H], then the minimum number of coinflips for three astronauts will be 2 [`ceiling(log2(3))`].
+
+We can then sample through uneven coins between 0.01 to fair, from 2 tosses to 10. And see at which point there is a reasonable degree of accuracy.
+
+```{r cars1, warning=FALSE}
+people<-3
+mintosses <- ceiling(log2(people))
+maxtosses<-10
+result<-NULL
+
+for (i in mintosses:maxtosses){
+  for (j in seq(0.01,0.5,0.05)){
+  a <- possibilities(i)
+  a <- cbind(a,sum=apply(a,1,sum))
+  a <- cbind(a, chance=sapply(a$sum,likelihood,n=i,prob=j))
+  split<-splitter(a$chance,people)
+  result<-rbind(result,c(i,j,sum(abs(sapply(split, sum)-1/people)),all(abs(sapply(split, sum)-1/people)<0.01)))
+  }
+}
+
+result<-as.data.frame(result)
+result2<-result
+ggplot(result, aes(x=V1, y=V2, fill=(V4==1)))+geom_raster(interpolate=F)
+```
+
+In this coarse overview, 5 flips is the minimum. Around a weighting of 0.4. Let's zoom in:
+
+```{r fine2, warning=FALSE,results = FALSE}
+people<-3
+mintosses <- ceiling(log2(people))
+maxtosses<-5
+result<-NULL
+
+for (i in mintosses:maxtosses){
+  for (j in seq(0.3,0.5,0.001)){
+  a <- possibilities(i)
+  a <- cbind(a,sum=apply(a,1,sum))
+  a <- cbind(a, chance=sapply(a$sum,likelihood,n=i,prob=j))
+  split<-prive(a$chance,people)
+  result<-rbind(result,c(i,j,sum(abs(sapply(split, sum)-1/people)),all(abs(sapply(split, sum)-1/people)<0.01)))
+  }
+}
+
+result<-as.data.frame(result)
+ggplot(result, aes(x=V1, y=V2, fill=(V4==1)))+geom_raster(interpolate=F)
+```
+
+We can see that the minimum number of coin flips is 4, with a weighting of 0.387:
+
+```{r flipsmin3}
+head(result[result$V4==1,],1)
+```
+
+We give astronaut 1:
+
+FTTF, FFTF, FTFT, FTTT, FTFF
+
+astronaut 2:
+
+FTFT, FFFT,FFFF,TFTF
+
+astronaut 3:
+
+TFFT,TFFF,TTFT,TTFF,TTTF,TTTT,TFTT
+
+```{r flipsmin24}
+  a <- possibilities(4)
+  a <- cbind(a,sum=apply(a,1,sum))
+  a <- cbind(a, chance=sapply(a$sum,likelihood,n=4,prob=0.387))
+  invisible(split<-prive(a$chance,people))
+  print(split)
+  print(a)
+```
+
+Taking this approach, I normalised each number of tosses to itself to find the best and worst weighting
+
+```{r pressure5, results = FALSE}
+m<-spread(result[,1:3], "V1", "V3")[,-1]
+data2<-melt(as.data.frame(cbind(weight=result[,2][1:dim(m)[1]],t(t(m)/colMax(m)))), id = "weight")
+ggplot(data2, aes(x=variable, y=weight, fill=(value)))+geom_raster(interpolate=F)
+
+```
+
+Without normalising, you can see that the accuracy increases with the more flips.
+
+```{r pressure5-2, results = FALSE}
+ggplot(result, aes(x=V1, y=V2, fill=(V3)))+geom_raster(interpolate=F)
+ggplot(result2, aes(x=V1, y=V2, fill=(V3)))+geom_raster(interpolate=F)
+```
+## How about number of successes?
+
+It would be quite difficult for the astronauts to remember exactly how the coin tosses went down, was it TTFT or TFTT?! So it may instead be easier to count how many "Heads" were achieved?
+
+```{r successes6, warning = FALSE}
+mintosses <- people-1
+result<-NULL
+maxtosses<-100
+
+
+for (i in mintosses:maxtosses){
+  for (j in seq(0.2,0.5,0.01)){
+    a<-NULL
+    for (k in 0:i){
+      a<-rbind(a,c(k,binom(k,i,j)))
+    }
+    split<-splitter(a[,2],people)
+    result<-rbind(result,c(i,j,sum(abs(sapply(split, sum)-1/people)),all(abs(sapply(split, sum)-1/people)<0.01)))
+  }
+}
+result<-as.data.frame(result)
+ggplot(result, aes(x=V1, y=V2, fill=(V4==1)))+geom_raster(interpolate=F)
+```
+
+Surprisingly, we can see you only need 6 tosses to get an acceptable split:
+
+We give astronaut 1:
+
+0,1 heads
+
+astronaut 2:
+
+2 heads
+
+astronaut 3:
+
+3, 4, 5, 6 heads 
+
+on a coin that gives heads 66% of the time.
+
+```{r split7}
+
+head(result[result$V4==1,],1)
+i=6
+j=0.34
+a<-NULL
+for (k in 0:i){
+  a<-rbind(a,c(k,binom(k,i,j)))
+}
+split<-splitter(a[,2],people)
+print(a)
+print(split)
+
+```
+## 5 Astronauts
+We can do the same process for 5 astronauts:
+
+``` {r 5 astro8}
+people<-5
+mintosses <- ceiling(log2(people))
+maxtosses<-10
+result<-NULL
+
+for (i in mintosses:maxtosses){
+  for (j in seq(0.35,0.45,0.01)){
+    a <- possibilities(i)
+    a <- cbind(a,sum=apply(a,1,sum))
+    a <- cbind(a, chance=sapply(a$sum,likelihood,n=i,prob=j))
+    split<-splitter(a$chance,people)
+    result<-rbind(result,c(i,j,sum(abs(sapply(split, sum)-1/people)),all(abs(sapply(split, sum)-1/people)<0.01)))
+  }
+}
+
+result<-as.data.frame(result)
+ggplot(result, aes(x=V1, y=V2, fill=(V4==1)))+geom_raster(interpolate=F)
+```
+
+```{r flipsmin9}
+head(result[result$V4==1,],1)
+```
+And get 6 flips with a 60% Heads coin.
+
+
+```{r 5 astro210, warning=FALSE}
+
+mintosses <- people-1
+result<-NULL
+maxtosses<-1000
+
+
+for (i in seq(mintosses,maxtosses,25)){
+  for (j in seq(0.2,0.5,0.01)){
+    a<-NULL
+    for (k in 0:i){
+      a<-rbind(a,c(k,dbinom(k,i,j)))
+    }
+    split<-splitter(a[,2],people)
+    result<-rbind(result,c(i,j,sum(abs(sapply(split, sum)-1/people)),all(abs(sapply(split, sum)-1/people)<0.01)))
+  }
+}
+result<-as.data.frame(result)
+ggplot(result, aes(x=V1, y=V2, fill=(V4==1)))+geom_raster(interpolate=F)
+```
+
+And we see we need ~280 coin tosses!
+
+```{r flipsmin11}
+head(result[result$V4==1,],1)
+
+```
+
+## What if they only had a fair coin?
+
+We could just flip a fair coin the minimum number of times each and wait until only one astronaut got all heads. 
+
+```{r fliptowin12}
+coinToss<- function(prob=0.5){
+  return(runif(1)<prob)
+}
+
+multipleToss <- function(tosses, prob=0.5){
+  return(sum(sapply(rep(prob,tosses), coinToss)))
+}
+
+players <- 3
+tosses <- ceiling(log2(players))
+fairness <- 0.5
+winner<-NULL
+reps<-1000
+
+for(j in 1:reps){
+  result<-NULL
+  while(!sum(result[,2]==tosses)==1){
+    result<-NULL
+    for (i in 1:players){
+      result <- rbind(result,c(player=i,wins=multipleToss(tosses, fairness)))
+    }
+  }
+  winner<-c(winner,which(result[,2]==tosses))
+}
+
+table(winner)
+hist(winner)
+```
+
+Finally, my colleague suggested just taking a dice...
+
+## Thanks
+Thanks to StackOverflow (https://stackoverflow.com/questions/46431527/split-a-vector-into-chunks-such-that-sum-of-each-chunk-is-approximately-constant/) where I got the functions Prive and Splitter.
+
+and for the riddle: https://fivethirtyeight.com/features/one-small-step-for-man-one-giant-coin-flip-for-mankind/ .
