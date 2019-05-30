@@ -328,7 +328,7 @@ ggplot(result, aes(x=V1, y=V2, fill=(V4==1)))+geom_raster(interpolate=F)</code><
 <p>2 heads</p>
 <p>astronaut 3:</p>
 <p>3, 4, 5, 6 heads</p>
-<p>on a coin that gives heads 66% of the time.</p>
+<p>on a coin that gives heads 34% of the time.</p>
 <pre class="r"><code>head(result[result$V4==1,],1)</code></pre>
 <pre><code>##     V1   V2          V3 V4
 ## 139  6 0.34 0.009592924  1</code></pre>
@@ -382,7 +382,7 @@ ggplot(result, aes(x=V1, y=V2, fill=(V4==1)))+geom_raster(interpolate=F)</code><
 <pre class="r"><code>head(result[result$V4==1,],1)</code></pre>
 <pre><code>##    V1  V2       V3 V4
 ## 39  6 0.4 0.027264  1</code></pre>
-<p>And get 6 flips with a 60% Heads coin.</p>
+<p>And get 6 flips with a 40% Heads coin.</p>
 <pre class="r"><code>mintosses &lt;- people-1
 result&lt;-NULL
 maxtosses&lt;-1000

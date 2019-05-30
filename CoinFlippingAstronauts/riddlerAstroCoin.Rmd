@@ -219,7 +219,7 @@ astronaut 3:
 
 3, 4, 5, 6 heads 
 
-on a coin that gives heads 66% of the time.
+on a coin that gives heads 34% of the time.
 
 ```{r split7}
 
@@ -261,7 +261,8 @@ ggplot(result, aes(x=V1, y=V2, fill=(V4==1)))+geom_raster(interpolate=F)
 ```{r flipsmin9}
 head(result[result$V4==1,],1)
 ```
-And get 6 flips with a 60% Heads coin.
+
+And get 6 flips with a 40% Heads coin.
 
 
 ```{r 5 astro210, warning=FALSE}
