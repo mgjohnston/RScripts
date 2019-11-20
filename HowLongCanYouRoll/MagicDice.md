@@ -93,10 +93,10 @@ plot(log10(result$i), result$mean)
 
 ![](MagicDice_files/figure-markdown_github/pressure4-1.png)
 
-Number of rolls
+Number of digits
 ---------------
 
-Each game consists of a number of rolls, whats the average game length?
+Each game consists of a number of rolls, whats the average number of digits?
 
 ``` r
 sigFig<-function(x) length(gregexpr("[[:digit:]]", as.character(x))[[1]])  #https://r.789695.n4.nabble.com/How-to-find-the-significant-digits-of-a-number-td964918.html
@@ -118,7 +118,9 @@ numRolls<-as.factor(numRolls)
 plot(tapply(play, numRolls, length))
 ```
 
-![](MagicDice_files/figure-markdown_github/pressure1-1.png) \# How does game average change with number of rolls?
+![](MagicDice_files/figure-markdown_github/pressure1-1.png) \
+
+## How does game average change with number of digits?
 
 ``` r
 tapply(play, numRolls, mean)
