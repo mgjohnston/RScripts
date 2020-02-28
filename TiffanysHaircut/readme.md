@@ -15,4 +15,4 @@ One Friday morning, you arrive at the barber shop to see that all four barbers a
 What is the expected wait time for getting a haircut from Tiffany?
 
 ## Answer
-14.2 mins
+14 min 3 seconds (continuous)
